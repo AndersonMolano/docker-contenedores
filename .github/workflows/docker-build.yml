@@ -1,0 +1,43 @@
+name: Docker build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Crear .env de prueba desde .env.example
+        run: cp .env.example .env
+
+      - name: Validar docker-compose.yml
+        run: docker compose config
+
+      - name: Construir las imágenes
+        run: docker compose build
+
+      - name: Levantar los servicios
+        run: docker compose up -d
+
+      - name: Probar la comunicación API <-> BD
+        run: |
+          for i in $(seq 1 15); do
+            if curl -fs http://localhost:5000/health; then break; fi
+            sleep 3
+          done
+          curl -fs -X POST http://localhost:5000/notas \
+            -H "Content-Type: application/json" \
+            -d '{"texto":"prueba desde CI"}'
+          curl -fs http://localhost:5000/notas
+
+      - name: Mostrar logs si algo falla
+        if: failure()
+        run: docker compose logs
+
+      - name: Apagar los servicios
+        if: always()
+        run: docker compose down -v
