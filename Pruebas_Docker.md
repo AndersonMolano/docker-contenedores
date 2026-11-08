@@ -41,6 +41,8 @@ Comando:
 
 `docker compose config --quiet`
 
+<img src="documentation/assets/img/img-1.png" width="700">
+
 Resultado: el comando finalizó sin mostrar errores ni advertencias.
 
 ### P02. Construcción de la imagen Flask
@@ -48,6 +50,8 @@ Resultado: el comando finalizó sin mostrar errores ni advertencias.
 Comando:
 
 `docker compose build api`
+
+<img src="documentation/assets/img/img-2.png" width="700">
 
 Resultado: Docker construyó correctamente la imagen `proyecto1-api:1.0`.
 
@@ -57,7 +61,16 @@ Comandos:
 
 `docker compose up -d`
 
+<img src="documentation/assets/img/img-3.png" width="700">  
+
+<br>
+
 `docker compose ps`
+
+
+<img src="documentation/assets/img/img-4.png" width="700">
+<br>
+<br>
 
 Resultados:
 
@@ -71,6 +84,8 @@ Resultados:
 Comando de PowerShell:
 
 `Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get`
+
+<img src="documentation/assets/img/img-5.png" width="700">
 
 Resultado:
 
@@ -86,6 +101,8 @@ Comando de PowerShell:
 
 `Invoke-RestMethod -Uri "http://localhost:5000/notas" -Method Post -ContentType "application/json" -Body '{"texto":"Prueba de integracion continua realizada desde mi rama"}'`
 
+<img src="documentation/assets/img/img-7.png" width="700">
+
 Resultado:
 
 - ID asignado: 1.
@@ -97,6 +114,8 @@ Comando:
 
 `Invoke-RestMethod -Uri "http://localhost:5000/notas" -Method Get`
 
+<img src="documentation/assets/img/img-6.png" width="700">  
+
 Resultado: la API recuperó la nota previamente almacenada, con identificador 1 y su fecha de creación.
 
 ### P08. Persistencia de información
@@ -106,6 +125,11 @@ Se ejecutaron los siguientes comandos:
 1. `docker compose down`
 2. `docker compose up -d`
 3. `Invoke-RestMethod -Uri "http://localhost:5000/notas" -Method Get`
+
+<img src="documentation/assets/img/img-8.png" width="700">  
+
+<img src="documentation/assets/img/img-9.png" width="700">  
+
 
 Resultado: la nota con identificador 1 permaneció disponible y conservó su fecha de creación.
 
@@ -130,11 +154,7 @@ Resultado:
 
 Las direcciones IP son dinámicas. La conexión entre servicios debe utilizar el nombre `db` y no una dirección IP fija.
 
-## 5. Evidencias
-
-Las capturas de las pruebas se conservarán para el informe académico. Deben corresponder a los comandos realmente ejecutados y sus resultados.
-
-## 6. Conclusiones
+## 5. Conclusiones
 
 Las nueve verificaciones realizadas finalizaron satisfactoriamente.
 
@@ -144,7 +164,7 @@ La solución cumple el objetivo técnico de construir dos contenedores Docker co
 
 Estas pruebas son locales. La validación de un pipeline en GitHub Actions debe documentarse separadamente mediante una ejecución verificable del workflow.
 
-## 7. Referencias
+## 6. Referencias
 
 - Docker. (s. f.). Docker Compose. https://docs.docker.com/compose/
 - Docker. (s. f.). Networking in Compose. https://docs.docker.com/compose/how-tos/networking/
