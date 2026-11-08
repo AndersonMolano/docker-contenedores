@@ -5,7 +5,7 @@ services:
     image: proyecto1-api:1.0
     container_name: proyecto1_api
     ports:
-      - "5000:5000"
+      - "${API_PORT:-5000}:5000"
     environment:
       # "db" es el NOMBRE DEL SERVICIO de abajo: Docker lo resuelve por DNS en la red
       DB_HOST: db
