@@ -32,6 +32,8 @@ Las pruebas buscan demostrar que los servicios se ejecutan correctamente, pueden
 | P07 | Lectura de información | `GET /notas` | Aprobada |
 | P08 | Persistencia de datos | `docker compose down`, `docker compose up -d` y `GET /notas` | Aprobada |
 | P09 | Inspección de red Docker | `docker network inspect docker-contenedores_red_proyecto` | Aprobada |
+| P10 | Ejecución del pipeline CI | `Workflow GitHub Actions Docker build` | Aprobada |
+
 
 ## 4. Resultados obtenidos
 
@@ -154,15 +156,46 @@ Resultado:
 
 Las direcciones IP son dinámicas. La conexión entre servicios debe utilizar el nombre `db` y no una dirección IP fija.
 
+### P10. Validación del pipeline de GitHub Actions
+
+Ejecución automática del workflow "docker-build.yml" mediante el evento disparado por un pull request
+
+<img src="documentation/assets/img/img-11.png" width="700">  
+
+<br>
+
+<img src="documentation/assets/img/img-10.png" width="700">  
+
+<br>
+Resultado:
+
+- Descarga automática del código fuente.
+- Creación de un archivo `.env` de prueba a partir de `.env.example`.
+- Validación de la configuración mediante `docker compose config`.
+- Construcción automática de las imágenes Docker.
+- Levantamiento de los servicios con `docker compose up -d`.
+- Verificación de disponibilidad de la API mediante `GET /health`.
+- Prueba automática de escritura de datos mediante `POST /notas`.
+- Prueba automática de lectura de datos mediante `GET /notas`.
+- Apagado controlado de los servicios al finalizar la ejecución.
+- Estado final del workflow: **Success**.
+
+El pipeline garantiza que cada cambio enviado al repositorio sea validado automáticamente, verificando la construcción de la solución, la disponibilidad de los contenedores y la correcta comunicación entre la API Flask y PostgreSQL antes de integrar nuevas modificaciones.
+
 ## 5. Conclusiones
 
-Las nueve verificaciones realizadas finalizaron satisfactoriamente.
+- Las diez verificaciones realizadas finalizaron satisfactoriamente.
 
-Se confirmó la construcción de la imagen Flask, el funcionamiento simultáneo de ambos contenedores, la comunicación con PostgreSQL, la escritura y recuperación de datos y la persistencia después de recrear los contenedores.
+- Se confirmó la construcción de la imagen Flask, el funcionamiento simultáneo de ambos contenedores, la comunicación con PostgreSQL, la escritura y recuperación de datos y la persistencia después de recrear los contenedores.
+ 
+- Las pruebas locales permitieron validar la construcción de la imagen de la API, el levantamiento de los contenedores, la comunicación entre Flask y PostgreSQL, la escritura y recuperación de información, la persistencia de los datos y la correcta configuración de la red Docker.
 
-La solución cumple el objetivo técnico de construir dos contenedores Docker comunicados entre sí.
+- La ejecución satisfactoria del workflow en GitHub Actions confirmó adicionalmente que la solución puede construirse y validarse de forma automática en cada push o pull request, fortaleciendo el proceso de integración continua mediante la ejecución repetible de pruebas sobre la infraestructura Docker.
 
-Estas pruebas son locales. La validación de un pipeline en GitHub Actions debe documentarse separadamente mediante una ejecución verificable del workflow.
+- La solución cumple el objetivo técnico de construir dos contenedores Docker comunicados entre sí.
+
+- La combinación de pruebas locales y automáticas aporta trazabilidad, confianza en los cambios y una detección temprana de errores, principios fundamentales de la integración continua. 
+
 
 ## 6. Referencias
 
