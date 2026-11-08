@@ -32,6 +32,8 @@ Las pruebas buscan demostrar que los servicios se ejecutan correctamente, pueden
 | P07 | Lectura de información | `GET /notas` | Aprobada |
 | P08 | Persistencia de datos | `docker compose down`, `docker compose up -d` y `GET /notas` | Aprobada |
 | P09 | Inspección de red Docker | `docker network inspect docker-contenedores_red_proyecto` | Aprobada |
+| P10 | Ejecución del pipeline CI | `Workflow GitHub Actions Docker build` | Aprobada |
+
 
 ## 4. Resultados obtenidos
 
@@ -41,6 +43,8 @@ Comando:
 
 `docker compose config --quiet`
 
+<img src="documentation/assets/img/img-1.png" width="700">
+
 Resultado: el comando finalizó sin mostrar errores ni advertencias.
 
 ### P02. Construcción de la imagen Flask
@@ -48,6 +52,8 @@ Resultado: el comando finalizó sin mostrar errores ni advertencias.
 Comando:
 
 `docker compose build api`
+
+<img src="documentation/assets/img/img-2.png" width="700">
 
 Resultado: Docker construyó correctamente la imagen `proyecto1-api:1.0`.
 
@@ -57,7 +63,16 @@ Comandos:
 
 `docker compose up -d`
 
+<img src="documentation/assets/img/img-3.png" width="700">  
+
+<br>
+
 `docker compose ps`
+
+
+<img src="documentation/assets/img/img-4.png" width="700">
+<br>
+<br>
 
 Resultados:
 
@@ -71,6 +86,8 @@ Resultados:
 Comando de PowerShell:
 
 `Invoke-RestMethod -Uri "http://localhost:5000/health" -Method Get`
+
+<img src="documentation/assets/img/img-5.png" width="700">
 
 Resultado:
 
@@ -86,6 +103,8 @@ Comando de PowerShell:
 
 `Invoke-RestMethod -Uri "http://localhost:5000/notas" -Method Post -ContentType "application/json" -Body '{"texto":"Prueba de integracion continua realizada desde mi rama"}'`
 
+<img src="documentation/assets/img/img-7.png" width="700">
+
 Resultado:
 
 - ID asignado: 1.
@@ -97,6 +116,8 @@ Comando:
 
 `Invoke-RestMethod -Uri "http://localhost:5000/notas" -Method Get`
 
+<img src="documentation/assets/img/img-6.png" width="700">  
+
 Resultado: la API recuperó la nota previamente almacenada, con identificador 1 y su fecha de creación.
 
 ### P08. Persistencia de información
@@ -106,6 +127,11 @@ Se ejecutaron los siguientes comandos:
 1. `docker compose down`
 2. `docker compose up -d`
 3. `Invoke-RestMethod -Uri "http://localhost:5000/notas" -Method Get`
+
+<img src="documentation/assets/img/img-8.png" width="700">  
+
+<img src="documentation/assets/img/img-9.png" width="700">  
+
 
 Resultado: la nota con identificador 1 permaneció disponible y conservó su fecha de creación.
 
@@ -130,21 +156,48 @@ Resultado:
 
 Las direcciones IP son dinámicas. La conexión entre servicios debe utilizar el nombre `db` y no una dirección IP fija.
 
-## 5. Evidencias
+### P10. Validación del pipeline de GitHub Actions
 
-Las capturas de las pruebas se conservarán para el informe académico. Deben corresponder a los comandos realmente ejecutados y sus resultados.
+Ejecución automática del workflow "docker-build.yml" mediante el evento disparado por un pull request
 
-## 6. Conclusiones
+<img src="documentation/assets/img/img-11.png" width="700">  
 
-Las nueve verificaciones realizadas finalizaron satisfactoriamente.
+<br>
 
-Se confirmó la construcción de la imagen Flask, el funcionamiento simultáneo de ambos contenedores, la comunicación con PostgreSQL, la escritura y recuperación de datos y la persistencia después de recrear los contenedores.
+<img src="documentation/assets/img/img-10.png" width="700">  
 
-La solución cumple el objetivo técnico de construir dos contenedores Docker comunicados entre sí.
+<br>
+Resultado:
 
-Estas pruebas son locales. La validación de un pipeline en GitHub Actions debe documentarse separadamente mediante una ejecución verificable del workflow.
+- Descarga automática del código fuente.
+- Creación de un archivo `.env` de prueba a partir de `.env.example`.
+- Validación de la configuración mediante `docker compose config`.
+- Construcción automática de las imágenes Docker.
+- Levantamiento de los servicios con `docker compose up -d`.
+- Verificación de disponibilidad de la API mediante `GET /health`.
+- Prueba automática de escritura de datos mediante `POST /notas`.
+- Prueba automática de lectura de datos mediante `GET /notas`.
+- Apagado controlado de los servicios al finalizar la ejecución.
+- Estado final del workflow: **Success**.
 
-## 7. Referencias
+El pipeline garantiza que cada cambio enviado al repositorio sea validado automáticamente, verificando la construcción de la solución, la disponibilidad de los contenedores y la correcta comunicación entre la API Flask y PostgreSQL antes de integrar nuevas modificaciones.
+
+## 5. Conclusiones
+
+- Las diez verificaciones realizadas finalizaron satisfactoriamente.
+
+- Se confirmó la construcción de la imagen Flask, el funcionamiento simultáneo de ambos contenedores, la comunicación con PostgreSQL, la escritura y recuperación de datos y la persistencia después de recrear los contenedores.
+ 
+- Las pruebas locales permitieron validar la construcción de la imagen de la API, el levantamiento de los contenedores, la comunicación entre Flask y PostgreSQL, la escritura y recuperación de información, la persistencia de los datos y la correcta configuración de la red Docker.
+
+- La ejecución satisfactoria del workflow en GitHub Actions confirmó adicionalmente que la solución puede construirse y validarse de forma automática en cada push o pull request, fortaleciendo el proceso de integración continua mediante la ejecución repetible de pruebas sobre la infraestructura Docker.
+
+- La solución cumple el objetivo técnico de construir dos contenedores Docker comunicados entre sí.
+
+- La combinación de pruebas locales y automáticas aporta trazabilidad, confianza en los cambios y una detección temprana de errores, principios fundamentales de la integración continua. 
+
+
+## 6. Referencias
 
 - Docker. (s. f.). Docker Compose. https://docs.docker.com/compose/
 - Docker. (s. f.). Networking in Compose. https://docs.docker.com/compose/how-tos/networking/
