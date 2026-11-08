@@ -45,8 +45,8 @@ no `localhost` ni una IP fija.
 
 1. Clonar el repositorio:
    ```bash
-   git clone <URL_DEL_REPOSITORIO>
-   cd docker-dos-contenedores
+   git clone https://github.com/AndersonMolano/docker-contenedores.git
+cd docker-contenedores
    ```
 2. Crear el archivo de variables de entorno (no se sube al repo):
    ```bash
