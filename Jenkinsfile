@@ -2,17 +2,15 @@ pipeline {
     agent any
 
     options {
-        skipDefaultCheckout(true)
+        skipDefaultCheckout()
         disableConcurrentBuilds()
-        timestamps()
     }
 
     environment {
-        POSTGRES_DB = 'notasdb'
-        POSTGRES_USER = 'app_user'
+        COMPOSE_PROJECT_NAME = 'entrega2-jenkins-ci'
+        POSTGRES_DB = 'notas_ci'
+        POSTGRES_USER = 'notas_ci'
         POSTGRES_PASSWORD = credentials('postgres-password-ci')
-        API_PORT = '18080'
-        COMPOSE_PROJECT_NAME = "jenkins-ci-${BUILD_NUMBER}"
     }
 
     stages {
@@ -24,74 +22,64 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'docker info'
-                sh 'docker compose build --pull api'
-                sh 'docker compose pull db'
+                sh 'docker compose build api db'
             }
         }
 
         stage('Test') {
             steps {
                 sh '''
-                    docker compose up -d --wait
+                    set -eu
+                    docker compose up -d --no-build
+
                     docker compose exec -T api python - <<'PY'
 import json
 import time
-import urllib.request
+from urllib.request import Request, urlopen
+from uuid import uuid4
 
-deadline = time.monotonic() + 60
-last_error = None
+base_url = "http://127.0.0.1:5000"
 
-while time.monotonic() < deadline:
+
+def read_json(path, method="GET", payload=None):
+    body = json.dumps(payload).encode("utf-8") if payload is not None else None
+    request = Request(
+        base_url + path,
+        data=body,
+        headers={"Content-Type": "application/json"},
+        method=method,
+    )
+    with urlopen(request, timeout=5) as response:
+        return json.load(response)
+
+
+for attempt in range(30):
     try:
-        with urllib.request.urlopen("http://127.0.0.1:5000/health", timeout=5) as response:
-            result = json.load(response)
-
-        assert result.get("api") == "ok", result
-        assert result.get("base_de_datos") == "ok", result
-        assert result.get("host_db") == "db", result
-
-        print("API and PostgreSQL communication verified via service name 'db'.")
-        print(json.dumps({
-            "api": result["api"],
-            "base_de_datos": result["base_de_datos"],
-            "host_db": result["host_db"]
-        }))
-        break
-    except Exception as error:
-        last_error = error
-        time.sleep(2)
+        health = read_json("/health")
+        if (
+            health.get("api") == "ok"
+            and health.get("base_de_datos") == "ok"
+            and health.get("host_db") == "db"
+        ):
+            print("La API se comunica con PostgreSQL por el servicio db.")
+            break
+    except (OSError, ValueError):
+        pass
+    time.sleep(1)
 else:
-    raise SystemExit(f"Health check failed after retries: {last_error}")
-PY
-                    docker compose exec -T api python - <<'PY'
-import json
-import urllib.request
+    raise SystemExit("La API no confirmó la conexión con el servicio db.")
 
-url = "http://127.0.0.1:5000/notas"
-payload = json.dumps({"texto": "prueba desde CI"}).encode("utf-8")
-request = urllib.request.Request(
-    url,
-    data=payload,
-    headers={"Content-Type": "application/json"},
-    method="POST",
-)
+text = f"Prueba de integracion Jenkins {uuid4()}"
+created = read_json("/notas", method="POST", payload={"texto": text})
+note_id = created.get("id")
+if note_id is None:
+    raise SystemExit("POST /notas no devolvió el ID de la nota creada.")
 
-with urllib.request.urlopen(request, timeout=10) as response:
-    created = json.load(response)
-    assert response.status == 201, created
-    assert created.get("texto") == "prueba desde CI", created
+notes = read_json("/notas")
+if not any(note.get("id") == note_id and note.get("texto") == text for note in notes):
+    raise SystemExit("GET /notas no recuperó la nota creada.")
 
-with urllib.request.urlopen(url, timeout=10) as response:
-    notes = json.load(response)
-    assert response.status == 200, notes
-    assert any(
-        note.get("id") == created.get("id")
-        and note.get("texto") == "prueba desde CI"
-        for note in notes
-    ), notes
-
-print("POST /notas and GET /notas verified.")
+print(f"Prueba de integración exitosa: nota {note_id} guardada y recuperada.")
 PY
                 '''
             }
@@ -100,11 +88,15 @@ PY
 
     post {
         always {
-            script {
-                if (fileExists('docker-compose.yml')) {
-                    sh 'docker compose down --volumes --remove-orphans'
-                }
-            }
+            sh '''
+                if [ -f docker-compose.yml ]; then
+                    docker compose down --volumes
+                fi
+            '''
+        }
+
+        failure {
+            echo 'El pipeline falló. Revisa la etapa marcada en rojo y la salida de consola.'
         }
     }
 }
